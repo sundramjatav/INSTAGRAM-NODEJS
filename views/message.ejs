@@ -1,0 +1,36 @@
+<%- include('./partials/header.ejs')%>
+<div id="main" class="w-full min-h-screen bg-zinc-900 text-white">
+    <div id="nav"
+        class="text-white flex justify-between items-center w-full z-[10] bg-zinc-900 px-3 h-[7.5vh] border-b border-zinc-800">
+        <div class="flex items-center gap-5">
+            <i onclick="window.history.back()" class="ri-arrow-left-line cursor-pointer text-xl sm:text-2xl"></i>
+            <a href="#" class="text-balance sm:text-2xl font-bold line-clamp-1"><%= userFind.username%> <i
+                    class="ri-arrow-down-s-line"></i></a>
+        </div>
+        <div class="flex items-center gap-4">
+            <i class="ri-edit-box-line cursor-pointer text-xl sm:text-2xl"></i>
+        </div>
+    </div>
+    <div class="w-full h-[85vh] overflow-y-auto px-3 py-1">
+        <% if(userFind.messageUsers.length != 0){%>
+            <% userFind.messageUsers.reverse().forEach(message=>{%>
+                <div class="card flex items-center gap-3 py-2">
+                    <div
+                        class="w-[12vw] h-[12vw] sm:w-[4vw] sm:h-[4vw] border border-zinc-500 flex-shrink-0 rounded-full overflow-hidden">
+                        <img src="<%= message.picture != '' ? message.picture : 'https://imgs.search.brave.com/yYo41Q5qvaLWiWNyviXvPU4nki121Pua0Mxsht0Gnc8/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9jZG4t/aWNvbnMtcG5nLmZs/YXRpY29uLmNvbS81/MTIvMTQ5LzE0OTA3/MS5wbmc' %>"
+                            class="w-full h-full object-cover" alt="" />
+                    </div>
+                    <a href="/message/<%= message._id%>" class="flex flex-col pr-3">
+                        <h1 class="text-base font-medium line-clamp-1">
+                            <%= message.name%>
+                        </h1>
+                        <span class="text-zinc-400 text-sm font-extralight line-clamp-1">Active 1h ago</span>
+                    </a>
+                </div>
+            <%})%>
+        <%}else{%>
+            <img src="https://cdn-icons-png.flaticon.com/512/2748/2748558.png" class="absolute w-[60%] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" alt="">
+        <%}%>
+    </div>
+</div>
+<%- include('./partials/footer.ejs')%>

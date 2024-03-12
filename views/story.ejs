@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src='https://cdn.tailwindcss.com'></script>
+    <link href='https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css' rel='stylesheet'/>
+</head>
+<body class="bg-zinc-900">
+    <div id="main" class="max-w-md h-screen bg-zinc-900 m-auto text-white relative">
+        <div style="background: linear-gradient(to bottom,rgba(0,0,0,.4),rgba(0,0,0,.3),rgba(0,0,0,0));" class="top w-full py-2 gap-3 absolute px-3">
+            <div class="flex gap-3 items-center">
+                <a href="/"><i class="ri-arrow-left-line text-xl"></i></a>
+                <img src="<%= storyUser.picture != '' ? storyUser.picture : 'https://imgs.search.brave.com/yYo41Q5qvaLWiWNyviXvPU4nki121Pua0Mxsht0Gnc8/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9jZG4t/aWNvbnMtcG5nLmZs/YXRpY29uLmNvbS81/MTIvMTQ5LzE0OTA3/MS5wbmc'%>" class="w-[45px] h-[45px] rounded-full object-cover border flex-shrink-0 border-zinc-500" alt="">
+                <h1 class="line-clamp-1 text-sm font-semibold"><%= storyUser.username%></h1>
+            </div>
+            <div class="w-full h-[2px] mt-2 bg-zinc-400 rounded overflow-hidden">
+                <div class="progress w-0 h-full bg-white"></div>
+            </div>
+        </div>
+        <div class="w-full h-screen">
+            <img src="<%= story.url%>" class="w-full h-screen object-cover" alt="">
+        </div>
+        <div class="botm w-full py-2 px-3 flex justify-between absolute bottom-0 text-2xl">
+            <i class="ri-heart-3-line mix-blend-difference"></i>
+            <i class="ri-send-plane-line mix-blend-difference"></i>
+        </div>
+    </div>
+
+    <script>
+        let count = 0;
+        const progress = document.querySelector(".progress")
+        const inter = setInterval(()=>{
+            if(count < 100){
+                count++;
+                progress.style.width = count+'%'
+            }else{
+                clearInterval(inter)
+                window.location.href = `${window.location.origin}/story/<%= storyUser._id%>/${Number(`<%= count %>`)+1}`
+            }
+        },30)
+    </script>
+</body>
+</html>

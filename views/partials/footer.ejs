@@ -1,0 +1,18 @@
+<% if(footer){ %>
+    <div class="footer text-white flex justify-between items-center w-full sticky bottom-0 z-[10] bg-zinc-900 px-10 py-3">
+        <a href="/"><i class="text-[1.4rem] ri-home-line"></i></a>
+        <a href="/search"><i class="text-[1.4rem] ri-search-line"></i></a>
+        <a href="/upload"><i class="text-[1.4rem] ri-add-box-line"></i></a>
+        <a href="/profile/<%= userFind._id%>">
+          <div class="w-6 h-6 bg-zinc-300 rounded-full overflow-hidden">
+            <img src="<%= userFind.picture != '' ? userFind.picture : 'https://imgs.search.brave.com/yYo41Q5qvaLWiWNyviXvPU4nki121Pua0Mxsht0Gnc8/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9jZG4t/aWNvbnMtcG5nLmZs/YXRpY29uLmNvbS81/MTIvMTQ5LzE0OTA3/MS5wbmc'%>" class="w-full h-full object-cover" alt="">
+          </div>
+        </a>
+      </div>
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<% } %>
+
+</body>
+</html>

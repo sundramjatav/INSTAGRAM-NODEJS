@@ -1,0 +1,277 @@
+<%- include('./partials/header.ejs')%>
+    <style>
+        [contentEditable="true"]:empty:not(:focus):before {
+            content: attr(data-text);
+        }
+    </style>
+    <div id="main" class="w-full min-h-screen bg-zinc-900 text-white">
+        <div id="nav"
+            class="text-white flex justify-between items-center w-full z-[10] bg-zinc-900 px-3 h-[7.5vh] border-b border-zinc-800">
+            <div class="flex items-center gap-5">
+                <i onclick="window.history.back()" class="ri-arrow-left-line cursor-pointer text-xl sm:text-2xl"></i>
+                <div href="#" class="text-sm sm:text-2xl font-semibold line-clamp-1 flex items-center gap-3">
+                    <img src="<%= chatUser.picture != '' ? chatUser.picture : 'https://imgs.search.brave.com/yYo41Q5qvaLWiWNyviXvPU4nki121Pua0Mxsht0Gnc8/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9jZG4t/aWNvbnMtcG5nLmZs/YXRpY29uLmNvbS81/MTIvMTQ5LzE0OTA3/MS5wbmc' %>"
+                        class="md:w-[2.5vw] md:h-[2.5vw] w-[10vw] h-[10vw] border flex-shrink-0 border-zinc-500 rounded-full object-cover line-clamp-1"
+                        alt="" />
+                    <div class="flex flex-col pr-2">
+                        <span class="line-clamp-1 md:text-sm font-bold">
+                            <%= chatUser.name%>
+                        </span>
+                        <span class="font-extralight text-xs text-zinc-300">Active 1h ago</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <i class="ri-phone-fill cursor-pointer text-xl sm:text-2xl"></i>
+                <i class="ri-vidicon-fill cursor-pointer text-xl sm:text-2xl"></i>
+                <i class="ri-information-2-fill cursor-pointer text-xl sm:text-2xl"></i>
+            </div>
+        </div>
+        <div id="conversation" class="conversation w-full h-[84vh]  p-2 overflow-y-auto flex flex-col gap-3">
+            
+            
+        </div>
+        <div class="w-full min-h-[7.5vh] border-t border-zinc-800 sticky bottom-0 flex items-center bg-zinc-900 justify-center py-2">
+            <div class="w-[85%] h-full flex items-center justify-start border border-zinc-500 rounded-[25px] px-3 py-2">
+                <div class="w-[90%] outline-none py-1 px-3 flex" id="inputArea" contenteditable="true"
+                    data-text="Enter Message"></div>
+                    <img src="" id="fileImage" class="fileImage hidden w-[90%] px-2" alt="">
+                    <input id="fileInput" size="100" maxlength="1" type="file" hidden>
+                <div class="right w-[10%] h-full flex items-center justify-end">
+                    <div id="hideIcon" class="items-center gap-3 text-2xl px-2 justify-center flex">
+                        <i class="ri-image-fill cursor-pointer"></i>
+                        <i class="ri-heart-line cursor-pointer"></i>
+                    </div>
+                    <div id="showIcon" class="hidden items-center pr-2">
+                        <i class="bx bxs-send text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+    <script defer>
+        const socket = io();
+        const currentUserid = "<%= user._id%>";
+        const chatUserid = "<%= chatUser._id%>";
+
+        // 1. join user socket id
+        socket.emit("join", currentUserid);
+
+        const fileInput = document.querySelector("#fileInput");
+        const fileImage = document.querySelector("#fileImage");
+        const inputArea = document.querySelector("#inputArea");
+        const hideIcon = document.querySelector("#hideIcon");
+        const showIcon = document.querySelector("#showIcon");
+
+        document.querySelector(".ri-image-fill").addEventListener("click",()=>{
+            fileInput.click()
+        })
+        fileInput.addEventListener("change",()=>{
+            hideIcon.classList.replace("flex", "hidden");
+            showIcon.classList.replace("hidden", "flex");
+
+            inputArea.classList.replace("flex","hidden")
+            fileImage.classList.replace("hidden","flex")
+            fileImage.src = URL.createObjectURL(fileInput.files[0])
+
+        })
+
+        inputArea.addEventListener("input", () => {
+            if (inputArea.textContent != "") {
+                hideIcon.classList.replace("flex", "hidden");
+                showIcon.classList.replace("hidden", "flex");
+            } else {
+                HideDe()
+            }
+        });
+        function HideDe(){
+            showIcon.classList.replace("flex", "hidden");
+            hideIcon.classList.replace("hidden", "flex");
+            inputArea.classList.replace("hidden","flex")
+            fileImage.src = ''
+            fileInput.value = ''
+        }
+
+        // 2. send message
+        document.querySelector(".bxs-send").addEventListener("click", () => {
+            const file = fileInput.files[0]
+            if (!inputArea.textContent) {
+                if(!file){
+                    return
+                }
+                if (file.size > 1024 * 1024) { // Max 1MB file size
+                    // console.error('File size exceeds the limit.');
+                    alert('File size exceeds the limit.')
+                    location.reload()
+                    return;
+                }
+                // blob send image
+                const reader = new FileReader();
+                // let imageData;
+                reader.onload = async function (e){
+                    console.log(e.target.result)
+                let imageData = await e.target.result;
+                        const msg = {
+                        senderid: currentUserid,
+                        receiverid: chatUserid,
+                        message: "",
+                        url: imageData,
+                    };
+                    const form = new FormData()
+                    form.append('image',fileInput.files[0])
+                    console.log(msg)
+                    socket.emit("send", msg);
+                    socket.on("message-url",msg=>{
+                        axios.post(`/message-url/${msg._id}`,form)
+                    })
+                    // blob receive image
+                    const blob = new Blob([imageData])
+                    const url = URL.createObjectURL(blob)
+                    console.log(url)
+                    sendMessage('',url,'')
+                    HideDe()
+                };
+
+                reader.readAsArrayBuffer(file);
+                
+                return;
+            }
+            const msg = {
+                senderid: currentUserid,
+                receiverid: chatUserid,
+                message: inputArea.textContent,
+                url: "",
+            };
+            socket.emit("send", msg);
+            sendMessage(msg.message,'','')
+            inputArea.textContent = "";
+            HideDe()
+        });
+        
+        // 3. received message
+        socket.on("receive", (msg) => {
+            // blob receive image
+            const blob = new Blob([msg.url])
+            const url = URL.createObjectURL(blob)
+            console.log(url)
+            receiveMessage(msg.message,url)
+        });
+
+        // 4. search message
+        socket.emit("searchMessage",{
+            senderid: currentUserid,
+            receiverid: chatUserid,
+        })
+
+        // 5. search messaged
+        socket.on("searchMessaged", (allMessages) =>{
+            document.querySelector("#conversation").innerHTML = ''
+            allMessages.forEach(message=>{
+                if(message.senderid == chatUserid){
+                    receiveMessage(message.message,message.url,message._id)
+                }else{
+                    sendMessage(message.message,message.url,message._id)
+                }
+            })
+        })
+
+        function sendMessage(message,url,id){
+            const template = `<div data-id='${id}' class="sender message cursor-pointer w-full min-h-[5vh] flex flex-col flex-shrink-0">
+                <div class="max-w-[65%] h-full flex items-end ml-auto">
+                    <div
+                        class="w-full h-full bg-[#766AC8] flex flex-col gap-2 rounded-tr-lg rounded-tl-lg rounded-bl-lg p-2 leading-[1.2] text-sm">
+                        <p>
+                            ${message}
+                        </p>
+                        ${url != '' ? `<img src="${url}"class="w-full rounded" alt="" />` : '' }
+                    </div>
+                    <svg width="9" height="16.5" class="svg-appendix relative bottom-0">
+                        <defs>
+                            <filter x="-50%" y="-14.7%" width="200%" height="141.2%" filterUnits="objectBoundingBox"
+                                id="messageAppendix">
+                                <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+                                <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1">
+                                </feGaussianBlur>
+                                <feColorMatrix
+                                    values="0 0 0 0 0.0621962482 0 0 0 0 0.138574144 0 0 0 0 0.185037364 0 0 0 0.15 0"
+                                    in="shadowBlurOuter1"></feColorMatrix>
+                            </filter>
+                        </defs>
+                        <g fill="none" fill-rule="evenodd">
+                            <path
+                                d="M6 17H0V0c.193 2.84.876 5.767 2.05 8.782.904 2.325 2.446 4.485 4.625 6.48A1 1 0 016 17z"
+                                fill="#000" filter="url(#messageAppendix)"></path>
+                            <path
+                                d="M6 17H0V0c.193 2.84.876 5.767 2.05 8.782.904 2.325 2.446 4.485 4.625 6.48A1 1 0 016 17z"
+                                fill="#766AC8" class="corner"></path>
+                        </g>
+                    </svg>
+                </div>
+            </div>`
+
+            document.querySelector("#conversation").innerHTML += template
+
+            const messageDelete = document.querySelectorAll(".message")
+            messageDeleted(messageDelete)
+
+        }
+
+        function receiveMessage(message,url,id){
+            const template = `<div data-id='${id}' class="receiver message w-full min-h-[5vh] flex flex-col flex-shrink-0">
+                <div class="max-w-[65%] h-full flex items-end mr-auto">
+                    <svg width="9" height="16" class="svg-appendix">
+                        <defs>
+                            <filter x="-50%" y="-14.7%" width="200%" height="141.2%" filterUnits="objectBoundingBox"
+                                id="messageAppendix">
+                                <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+                                <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1">
+                                </feGaussianBlur>
+                                <feColorMatrix
+                                    values="0 0 0 0 0.0621962482 0 0 0 0 0.138574144 0 0 0 0 0.185037364 0 0 0 0.15 0"
+                                    in="shadowBlurOuter1"></feColorMatrix>
+                            </filter>
+                        </defs>
+                        <g fill="none" fill-rule="evenodd">
+                            <path
+                                d="M3 17h6V0c-.193 2.84-.876 5.767-2.05 8.782-.904 2.325-2.446 4.485-4.625 6.48A1 1 0 003 17z"
+                                fill="#000" filter="url(#messageAppendix)"></path>
+                            <path
+                                d="M3 17h6V0c-.193 2.84-.876 5.767-2.05 8.782-.904 2.325-2.446 4.485-4.625 6.48A1 1 0 003 17z"
+                                fill="#2d2d2d" class="corner"></path>
+                        </g>
+                    </svg>
+                    <div
+                        class="w-full h-full bg-[#2d2d2d] rounded-tr-lg rounded-tl-lg rounded-br-lg p-2 leading-[1.2] text-sm flex flex-col gap-2">
+                        <p>
+                            ${message}
+                        </p>
+                        ${url != '' ? `<img src="${url}"class="w-full rounded" alt="" />` : '' }
+                        
+                    </div>
+                </div>
+            </div>`
+            document.querySelector("#conversation").innerHTML += template
+
+            let messageDelete = document.querySelectorAll(".message")
+            messageDeleted(messageDelete)
+        }
+
+        function messageDeleted(messageDelete){
+            messageDelete.forEach(msg=>{
+                msg.addEventListener("contextmenu",(e)=>{
+                    e.preventDefault()
+                    const ms = confirm("Delete for everyone")
+                    if(ms === true){
+                        axios.get(`/message/delete/${chatUserid}/${msg.dataset.id}`).then(({data})=>{
+                            console.log(data)
+                            location.reload()
+                        })
+                    }
+                })
+            })
+        }
+    </script>
+    

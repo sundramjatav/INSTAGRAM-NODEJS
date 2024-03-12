@@ -1,0 +1,272 @@
+<% include ./partials/header.ejs %>
+  <div class="w-full min-h-screen bg-zinc-900 text-white py-5">
+    <div class="w-full px-4 flex items-center justify-between">
+      <img class="w-1/4" src="/images/logo.png" alt="">
+      <div class="icons -mt-2 flex gap-5 items-center">
+        <i class="text-[1.4rem] ri-heart-3-line"></i>
+        <a href="/messages"><i class="text-[1.4rem] ri-messenger-line"></i></a>
+      </div>
+    </div>
+    <div class="story px-3 flex gap-3 overflow-auto mt-5">
+      <div class="circle flex-shrink-0 relative overflow-hidden">
+        <div
+          class="gradient w-[70px] h-[70px] relative bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 via-red-600-600 flex items-center justify-center">
+          <a href="/story/<%= user._id%>/1" class="inner w-[92%] h-[92%] rounded-full relative overflow-hidden">
+            <% if(user.stories.length != 0){%>
+              <% user.stories.forEach(story=>{%>
+                <% if(story.types == 'image/png' || story.types == 'image/jpg' || story.types == 'image/jpeg' || story.types == 'image/webp'){%>
+                    <img src="<%= story.url%>" class="w-full h-full object-cover absolute" alt="">
+                    <%}else if(story.types == 'video/mp4'){%>
+                      <video class="w-full h-full object-cover absolute"
+                      src="<%= story.url%>" controls loop autoplay muted
+                      alt=""></video>
+                <%}%>
+              <%})%>
+            <%}else{%>
+              <img src="https://freepngimg.com/thumb/instagram/118541-logo-instagram-png-download-free.png" class="w-full h-full object-cover" alt="">
+            <%}%>
+            </a>
+          <i id="storyAdd" class="ri-add-circle-fill absolute bottom-0 right-0 text-xl cursor-pointer"></i>
+        </div>
+        <div class="w-[70px] flex items-center pt-1 overflow-hidden">
+          <span class="font-semibold text-sm text-center w-full m-auto overflow-hidden line-clamp-1">Your story</span>
+        </div>
+        <form id="storyForm" hidden action="/story/create" method="post" enctype="multipart/form-data">
+          <input id="storyInput" name="url" type="file" accept="image/png,image/jpg,image/jpeg,image/webp,video/mp4,video/*,image/*">
+        </form>
+        <script>
+          document.querySelector("#storyAdd").addEventListener("click",()=>{
+            document.querySelector("#storyInput").click()
+          })
+          document.querySelector("#storyInput").addEventListener("change",()=>{
+            document.querySelector("#storyForm").submit()
+          })
+        </script>
+      </div>
+
+      <% if(allStoryUsers.length != 0){%>
+        <% allStoryUsers.reverse().forEach(storyUser=>{%>
+          <% if(storyUser.stories.length != 0){%>
+          <a href="/story/<%= storyUser._id%>/1" class="circle flex-shrink-0">
+            <div
+              class="gradient w-[70px] h-[70px] bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
+              <div class="inner w-[92%] h-[92%] rounded-full relative overflow-hidden">
+                <% if(storyUser.stories[storyUser.stories.length - 1].types == 'image/png' || storyUser.stories[storyUser.stories.length - 1].types == 'image/jpg' || storyUser.stories[storyUser.stories.length - 1].types == 'image/jpeg' || storyUser.stories[storyUser.stories.length - 1].types == 'image/webp'){%>
+                  <img class="w-full h-full object-cover absolute"
+                    src="<%= storyUser.stories[storyUser.stories.length - 1].url%>"
+                    alt="">
+                    <%}else if(storyUser.stories[storyUser.stories.length - 1].types == 'video/mp4'){%>
+                      <video class="w-full h-full object-cover absolute"
+                      src="<%= storyUser.stories[storyUser.stories.length - 1].url%>"loop autoplay muted
+                      alt=""></video>
+                <%}%>
+                </div>
+              </div>
+              <div class="w-[70px] flex items-center pt-1 overflow-hidden">
+                <span class="font-semibold text-sm text-center w-full m-auto overflow-hidden line-clamp-1"><%= storyUser.username%></span>
+              </div>
+            </a>
+            <%}%>
+        <%})%>
+      <%}%>
+      
+    </div>
+    <div class="posts mb-20">
+      <% if(posts.length != 0){%>
+        <% posts.reverse().forEach(post=>{%>
+          <div id="postClick" class="postDiv post mt-5 w-full min-h-[50vh]">
+            <a href="/profile/<%= post.userid._id%>" class="title px-4 flex items-center gap-2">
+              <div class="w-[40px] h-[40px] bg-sky-100 rounded-full overflow-hidden">
+                <img class="w-full h-full object-cover" src="<%= post.userid.picture != '' ? post.userid.picture : 'https://imgs.search.brave.com/yYo41Q5qvaLWiWNyviXvPU4nki121Pua0Mxsht0Gnc8/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9jZG4t/aWNvbnMtcG5nLmZs/YXRpY29uLmNvbS81/MTIvMTQ5LzE0OTA3/MS5wbmc'%>" alt="">
+              </div>
+              <h4 class="text-sm"><%= post.userid.username%></h4>
+              <h6 class="text-xs opacity-30">
+                <% if(post.ago < 60){%>
+                  <%= post.ago%> seconds ago
+
+                  <%}else if(post.ago < 60*60 ){%>
+                    <%= Math.floor(post.ago/60) %> minutes ago
+
+                  <%}else if(post.ago < 60*60*24 ){%>
+                    <%= Math.floor(post.ago/(60*60)) %> hours ago
+
+                  <%}else if(post.ago < 60*60*24*30){%>
+                    <%= Math.floor(post.ago/(60*60*24)) %> days ago
+
+                  <%}else if(post.ago < 60*60*24*30*12){%>
+                    <%= Math.floor(post.ago/(60*60*24*30)) %> months ago
+                    
+                <%}else if(post.ago < 60*60*24*30*12*99){%>
+                  <%= Math.floor(post.ago/(60*60*24*30*12)) %> year ago
+                  
+              <%}%>
+              </h6>
+            </a>
+            <% if(post.url){%>
+              <div class="imageDiv w-full max-h-[450px] mt-3 bg-sky-100 overflow-hidden relative">
+                <% if(post.types == "image/jpeg" || post.types == "image/png" || post.types == "image/jpg" || post.types == "image/webp"){%>
+                  <img src="<%= post.url%>" class="urlPost w-full h-full object-cover" alt="">
+                  <%}else if(post.types == "video/mp4"){%>
+                    <video src="<%= post.url%>" autoplay loop class="urlPost videoPlay w-full max-h-[450px] object-cover" alt=""></video>
+                  <%}%>
+                <img src="https://icon-library.com/images/instagram-heart-icon-png/instagram-heart-icon-png-8.jpg" class="likeBtn absolute z-50 w-[50%] scale-0 transition-all duration-300 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" alt="">
+              </div>
+            <%}%>
+            <div class="options w-full px-4 flex justify-between items-center text-[1.4rem]">
+              <div class="flex gap-3 mt-2">
+                <i data-like="/like/<%= post._id%>" class="<%= post.likes.indexOf(user._id) == -1 ? 'ri-heart-3-line' : 'ri-heart-fill' %> ri-heart-3 cursor-pointer"></i>
+                <i data-comment="/comment/<%= post._id%>" class="ri-chat-3-line cursor-pointer"></i>
+                <i data-share="/share?url=<%= post._id%>" class="ri-share-circle-line cursor-pointer"></i>
+              </div>
+              <i data-save="/save/<%= post._id%>" class="<%= user.postsave.indexOf(post._id) == -1 ? 'ri-bookmark-line' : 'ri-bookmark-fill' %> savepost cursor-pointer"></i>
+            </div>
+            <h3 class="likeCount px-4 mt-2 text-sm leading-none tracking-tight"><%= post.likes.length%> likes</h3>
+            <% if(post.caption){%>
+              <h2 class="text-white font-light text-sm mt-2"><span class="font-semibold pl-4 pr-2"><%= post.userid.username%></span><%=post.caption%></h2>
+            <%}%>
+          </div>
+        <%})%>
+      <%}%>
+    </div>
+  </div>
+
+  <%- include("./partials/footer.ejs")%>
+  <script>
+
+    document.querySelector(".posts").addEventListener("click",(e)=>{
+      if(e.target.classList.contains('ri-heart-3')){
+        likeBtn(e.target)
+      }
+      if(e.target.classList.contains("ri-chat-3-line")){
+        console.log(`${window.location.origin}${e.target.dataset.comment}`)
+        window.location.href = `${window.location.origin}${e.target.dataset.comment}` 
+      }
+    })
+    document.querySelector(".posts").addEventListener("click",(e)=>{
+      if(e.target.classList.contains("urlPost")){
+        const icon = document.createElement("i")
+        icon.classList.add("ri-heart-3-fill","text-red-500","top-1/2","left-1/2","-translate-x-1/2","-translate-y-1/2","absolute","text-6xl")
+        e.target.parentNode.appendChild(icon)
+        gsap.from(icon,{
+          opacity:0,
+          top:'60%',
+          onComplete:()=>{
+            gsap.to(icon,{
+              opacity:0,
+              top:'40%',
+              onComplete:()=>{
+                e.target.parentNode.removeChild(icon)
+              }
+            })
+          }
+        })
+        const likeAnimated = e.target.parentNode.parentNode.querySelector(".ri-heart-3")
+        likeBtn(likeAnimated)
+      }
+
+      // save post
+      if(e.target.classList.contains("savepost")){
+        axios.get(`${e.target.dataset.save}`).then(({data})=>{
+          if(e.target.classList.contains("ri-bookmark-line")){
+            e.target.classList.replace("ri-bookmark-line","ri-bookmark-fill")
+          }else{
+            e.target.classList.replace("ri-bookmark-fill","ri-bookmark-line")
+          }
+          console.log(data)
+        })
+      }
+
+      // notifications
+      if(e.target.classList.contains("ri-share-circle-line")){
+        console.log(window.location)
+        // Define the text message you want to share
+        var message = encodeURIComponent("Hello! Check out this awesome content.");
+
+        // Construct the WhatsApp Web URL with the message
+        var whatsappURL = "https://wa.me/?text=" + message;
+
+        // Open the WhatsApp Web interface in a new tab/window
+        window.open(whatsappURL, "_blank");
+      }
+
+    })
+
+    function likeBtn(elem){
+      axios(elem.dataset.like).then(({data})=>{
+          if(elem.classList.contains('ri-heart-3-line')){
+            elem.classList.replace("ri-heart-3-line","ri-heart-fill")
+          }else{
+            elem.classList.replace("ri-heart-fill","ri-heart-3-line")
+          }
+          elem.parentNode.parentNode.parentNode.querySelector(".likeCount").textContent = data.likes.length + ' likes';
+        })
+    }
+
+    // document.querySelectorAll(".postDiv").forEach(post=>{
+    //   post.querySelector(".imageDiv").addEventListener("dblclick",()=>{
+    //     post.querySelector(".likeBtn").classList.replace("scale-0","scale-100")
+    //     setTimeout(()=>{
+    //       post.querySelector(".likeBtn").classList.replace("scale-100","scale-75")
+    //     },250)
+    //     likeBubble(post)
+    //     setTimeout(()=>{
+    //         post.querySelector(".likeBtn").classList.replace("scale-75","scale-0")
+    //     },800)
+    //   })
+    //   post.querySelector(".ri-heart-3").addEventListener("click",()=>{
+    //     likeBubble(post)
+    //   })
+    //   post.querySelector(".ri-share-circle-line").addEventListener("click",async ()=>{
+        
+    //   })
+    // })
+    
+
+
+    // function likeBubble(post){
+    //     let postLi = post.querySelector(".ri-heart-3").classList[0]
+    //     axios.get(post.querySelector(".ri-heart-3").dataset.like).then(like=>{
+    //       post.querySelector(".likeCount").innerHTML = like.data.likes.length+' likes'
+    //       if(postLi === "ri-heart-fill"){
+    //         post.querySelector(".ri-heart-3").classList.replace("ri-heart-fill","ri-heart-3-line")
+    //       }else{
+    //         post.querySelector(".ri-heart-3").classList.replace("ri-heart-3-line","ri-heart-fill")
+    //       }
+    //     })
+    //   }
+
+
+
+      
+      
+      function playPauseVideo() {
+    let videos = document.querySelectorAll("video");
+    videos.forEach((video) => {
+        // We can only control playback without insteraction if video is mute
+        video.muted = false;
+        // Play is a promise so we need to check we have it
+        let playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then((_) => {
+                let observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((entry) => {
+                            if (
+                                entry.intersectionRatio !== 1 &&
+                                !video.paused
+                            ) {
+                                video.pause();
+                            } else if (video.paused) {
+                                video.play();
+                            }
+                        });
+                    },
+                    { threshold: 0.2 }
+                );
+                observer.observe(video);
+            });
+        }
+    });
+}
+playPauseVideo()
+  </script>

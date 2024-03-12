@@ -1,0 +1,73 @@
+<% if(posts.length != 0){%>
+    <% posts.reverse().forEach(post=>{%>
+      <div id="postClick" class="postDiv post mt-10 w-full min-h-[50vh]">
+        <a href="/profile/<%= post.userid._id%>" class="title px-4 flex items-center gap-2">
+          <div class="w-[10vw] h-[10vw] bg-sky-100 rounded-full overflow-hidden">
+            <img src="<%= post.userid.picture != '' ? post.userid.picture : 'https://imgs.search.brave.com/yYo41Q5qvaLWiWNyviXvPU4nki121Pua0Mxsht0Gnc8/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9jZG4t/aWNvbnMtcG5nLmZs/YXRpY29uLmNvbS81/MTIvMTQ5LzE0OTA3/MS5wbmc'%>" alt="">
+          </div>
+          <h4 class="text-sm"><%= post.userid.username%></h4>
+          <h6 class="text-xs opacity-30">1d</h6>
+        </a>
+        <% if(post.url){%>
+          <div class="imageDiv w-full h-96 mt-3 bg-sky-100 overflow-hidden relative">
+            <img src="<%= post.url%>" class="w-full h-full object-cover" alt="">
+            <img src="https://icon-library.com/images/instagram-heart-icon-png/instagram-heart-icon-png-8.jpg" class="likeBtn absolute z-50 w-[50%] scale-0 transition-all duration-300 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" alt="">
+          </div>
+        <%}%>
+        <div class="options w-full px-4 flex justify-between items-center text-[1.4rem]">
+          <div class="flex gap-3 mt-2">
+            <i data-like="/like/<%= post._id%>" class="<%= post.likes.indexOf(user._id) == -1 ? 'ri-heart-3-line' : 'ri-heart-fill' %> ri-heart-3 cursor-pointer"></i>
+            <i class="ri-chat-3-line cursor-pointer"></i>
+            <i data-share="/share?url=<%= post._id%>" class="ri-share-circle-line cursor-pointer"></i>
+          </div>
+          <i class="ri-bookmark-line"></i>
+        </div>
+        <h3 class="likeCount px-4 mt-2 text-sm leading-none tracking-tight"><%= post.likes.length%> likes</h3>
+        <% if(post.caption){%>
+          <h2 class="text-white font-light text-sm mt-2"><span class="font-semibold pl-4 pr-2"><%= post.userid.username%></span><%=post.caption%></h2>
+        <%}%>
+      </div>
+    <%})%>
+  <%}%>
+
+
+
+  <!-- story post  -->
+  <% if(allStoryUsers.length != 0){%>
+    <% allStoryUsers.reverse().forEach(storyUser=>{%>
+      <% if(storyUser.stories.length != 0){%>
+      <div class="circle flex-shrink-0">
+        <div
+          class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
+          <div class="inner w-[92%] h-[92%] rounded-full relative overflow-hidden">
+
+            <% if(storyUser.stories[storyUser.stories.length - 1].types == 'image/png' || storyUser.stories[storyUser.stories.length - 1].types == 'image/jpg' || storyUser.stories[storyUser.stories.length - 1].types == 'image/jpeg' || storyUser.stories[storyUser.stories.length - 1].types == 'image/webp'){%>
+              <img class="w-full h-full object-cover absolute"
+                src="<%= storyUser.stories[storyUser.stories.length - 1].url%>"
+                alt="">
+                <%}else if(storyUser.stories[storyUser.stories.length - 1].types == 'video/mp4'){%>
+                  <video class="w-full h-full object-cover absolute"
+                  src="<%= storyUser.stories[storyUser.stories.length - 1].url%>" controls loop autoplay muted
+                  alt=""></video>
+            <%}%>
+            <!-- // or  -->
+            <% storyUser.stories.forEach(story=>{%>
+              <% if(story.types == 'image/png' || story.types == 'image/jpg' || story.types == 'image/jpeg' || story.types == 'image/webp'){%>
+                <img class="w-full h-full object-cover absolute"
+                  src="<%= story.url%>"
+                  alt="">
+                  <%}else if(story.types == 'video/mp4'){%>
+                    <video class="w-full h-full object-cover absolute"
+                    src="<%= story.url%>" controls loop autoplay muted
+                    alt=""></video>
+              <%}%>
+            <%})%>
+            </div>
+          </div>
+          <div class="w-[18vw] flex items-center pt-1 overflow-hidden">
+            <span class="font-semibold text-sm text-center w-full m-auto overflow-hidden line-clamp-1"><%= storyUser.username%></span>
+          </div>
+        </div>
+        <%}%>
+    <%})%>
+  <%}%>

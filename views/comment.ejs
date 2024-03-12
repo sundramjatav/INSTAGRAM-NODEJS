@@ -1,0 +1,104 @@
+<% include ./partials/header.ejs %>
+<div class="w-full h-screen text-white overflow-y-auto pb-5">
+    <div class="w-full py-[10px] flex flex-col items-center justify-center text-center relative bg-zinc-900">
+        <i onclick="window.history.back()" class="ri-arrow-left-line cursor-pointer text-2xl sm:text-2xl absolute left-5"></i>
+        <span class="w-16 h-[6px] rounded-full bg-slate-200"></span>
+        <span class="font-semibold mt-1">Comments</span>
+    </div>
+    <div class="w-full overflow-hidden p-2">
+        <img src="<%= post.url%>" class="w-full max-h-[60vh] object-contain border-zinc-800 border rounded" alt="">
+    </div>
+    <div id="commentDiv" class="w-full flex flex-col py-3 px-1">
+        <% if(comments.length != 0){%>
+            <% comments.reverse().forEach(comment=>{%>
+                <% const time = Math.floor(((new Date()) - (new Date(comment.createdAt)))/1000) %>
+                
+                <div class="com w-full flex gap-4 px-2 relative">
+                    <div class="gradient w-[45px] h-[45px] mt-2 flex-shrink-0 bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center p-[2px]">
+                        <img data-userid="<%= comment.userid._id%>" src="<%= comment.userid.picture%>" class="w-full h-full object-cover rounded-full" alt="">
+                    </div>
+                    <div class="w-full">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-semibold flex gap-2 items-center"><%= comment.userid.username%> <span class="font-bold">
+                                <% if(time < 60){%>
+                                    <%= time%> s
+                                    <%}else if(time < 60*60 ){%>
+                                    <%= Math.floor(time/60) %> m
+                                    <%}else if(time < 60*60*24 ){%>
+                                    <%= Math.floor(time/(60*60)) %> h
+                                    <%}else if(time < 60*60*24*30){%>
+                                    <%= Math.floor(time/(60*60*24)) %> d
+                                    <%}else if(time < 60*60*24*30*12){%>
+                                    <%= Math.floor(time/(60*60*24*30)) %> month
+                                <%}else if(time < 60*60*24*30*12*99){%>
+                                    <%= Math.floor(time/(60*60*24*30*12)) %> year
+                                <%}%>
+                            </span></span>
+                        </div>
+                        <div class="like text-2xl absolute right-2 z-10 -top-1 cursor-pointer">
+                            <i class="ri-heart-3-line"></i>
+                            <!-- <i class="ri-heart-3-line text-red-500"></i> -->
+                        </div>
+                        <p class="text-xs leading-[1.2] text-zinc-200 line-clamp-3 mt-1"><%= comment.comment%></p>
+                        <span class="text-sm font-semibold text-blue-500 cursor-pointer relative bottom-1">more</span>
+                    </div>
+                </div>
+            <%})%>
+        <%}else{%>
+            <h1 class="m-auto font-bold text-xl mt-5 flex flex-col items-center justify-center leading-[1.2]">No Comments Yet <span class="text-zinc-400 leading-[1.2] font-medium text-sm">start the conversation</span></h1>
+        <%}%>
+        
+    </div>
+</div>
+<div class="btm w-full py-3 flex gap-3 sticky bottom-0 bg-zinc-900 px-3 z-50">
+    <img src="<%= userFind.picture != '' ? userFind.picture : 'https://imgs.search.brave.com/yYo41Q5qvaLWiWNyviXvPU4nki121Pua0Mxsht0Gnc8/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9jZG4t/aWNvbnMtcG5nLmZs/YXRpY29uLmNvbS81/MTIvMTQ5LzE0OTA3/MS5wbmc' %>" class="w-[40px] h-[40px] object-cover flex-shrink-0 rounded-full border" alt="">
+    <div class="w-full flex items-center gap-2 text-white">
+        <input id="commentInput" type="text" placeholder="Add a comment..." class="text-sm outline-none w-full" style="background: none;">
+        <button data-postid="<%= post._id%>" id="commentBtn" class="cursor-pointer font-bold text-blue-500">send</button>
+    </div>
+</div>
+<script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+<script>
+    const commentBtn = document.querySelector("#commentBtn")
+    const commentInput = document.querySelector("#commentInput")
+    const commentDiv = document.querySelector("#commentDiv")
+    commentBtn.addEventListener("click",()=>{
+        if(!commentInput.value){
+            return
+        }
+        axios.post(`/comment/msg/${commentBtn.dataset.postid}`,{comment:commentInput.value}).then(({data})=>{
+            console.log(data)
+            commentDiv.innerHTML = ''
+            data.reverse().forEach(data=>{
+                const currentTime = new Date()
+                const posttime = new Date(data.createdAt)
+                const time = Math.floor((currentTime - posttime)/(1000))
+                commentConversation(data.userid._id,data.userid.username,data.userid.picture,data.comment,time,'')
+            })
+            commentInput.value = ""
+        })
+    })
+
+    function commentConversation(userid,username,picture,comment,time,likes){
+        const template = `<div class="com w-full flex gap-4 px-2 relative">
+                    <div class="gradient w-[45px] h-[45px] mt-2 flex-shrink-0 bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center p-[2px]">
+                        <img data-userid="${userid}" src="${picture}" class="w-full cursor-pointer h-full object-cover rounded-full" alt="">
+                    </div>
+                    <div class="w-full">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-semibold flex gap-2 items-center">${username} <span class="font-bold">
+                                
+                                ${time<60 ? Math.floor(time)+' s' : time<60*60 ? Math.floor(time/60)+' m' :time<60*60*24 ? Math.floor(time/(60*60))+' h' :time<60*60*24*30 ? Math.floor(time/(60*60*24))+' d' :time<60*60*24*30*12 ? Math.floor(time/(60*60*24*30))+' months' :time<60*60*24*30*12 ? Math.floor(time/(60*60*24*30))+' years' :'' }
+                                </span></span>
+                        </div>
+                        <div class="like text-2xl absolute right-2 z-10 -top-1 cursor-pointer">
+                             <i class="ri-heart-3-line"></i>
+                             <!-- <i class="ri-heart-3-line text-red-500"></i> -->
+                        </div>
+                        <p class="text-xs leading-[1.2] text-zinc-200 line-clamp-3 mt-1">${comment}</p>
+                        <span class="text-sm font-semibold text-blue-500 cursor-pointer relative bottom-1">more</span>
+                    </div>
+                </div>`
+            commentDiv.innerHTML += template
+    }
+</script>
